@@ -1,0 +1,107 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: demo
+  name: demo
+spec:
+  ports:
+    - name: http
+      port: 8081
+      protocol: TCP
+      targetPort: 8081
+  selector:
+    app: demo
+  sessionAffinity: None
+  type: ClusterIP
+
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: demo
+  name: demo
+spec:
+  selector:
+    matchLabels:
+      app: demo
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: demo
+    spec:
+      containers:
+        - command:
+            - sleep
+            - 1d
+          image: java:8u111-alpine
+          imagePullPolicy: IfNotPresent
+          name: demo
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      securityContext: {}
+      serviceAccount: demo
+---
+
+apiVersion: v1
+data:
+  application.yml: |-
+    server:
+      port: 8081
+    logging:
+      level:
+        root: INFO
+    mybatis:
+      mapper-locations: classpath:mapper/*.xml
+    spring:
+      cloud:
+        kubernetes:
+          discovery:
+            all-namespaces: true
+      mvc:
+        pathmatch:
+          matching-strategy: ANT_PATH_MATCHER
+      main:
+        allow-bean-definition-overriding: true
+      application:
+        name: demo
+      devtools:
+        restart:
+          enabled: true
+          additional-paths: src/main/java
+      jpa:
+        hibernate:
+          ddl-auto: update
+        show-sql: true
+      datasource:
+        url: jdbc:mysql://10.244.0.12:3306/testjava
+        username: root
+        password: 123456
+        driver-class-name: com.mysql.cj.jdbc.Driver
+    management:
+      server:
+        port: 9090
+      endpoints:
+        web:
+          exposure:
+            include: "*"
+      endpoint:
+        metrics:
+          enabled: true
+      metrics:
+        tags:
+          application: ${spring.application.name}
+        export:
+          prometheus:
+            enabled: true
+kind: ConfigMap
+metadata:
+  name: demo

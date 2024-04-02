@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.ushareit.scmp.mapper.StudentMapper">
+    <resultMap id="StudentResultMap" type="com.ushareit.scmp.model.Student">
+        <id property="id" column="id"/>
+        <result property="name" column="name"/>
+        <result property="gender" column="gender"/>
+    </resultMap>
+
+    <select id="getStudentByName" parameterType="string" resultMap="StudentResultMap">
+        SELECT * FROM student WHERE name = #{name}
+    </select>
+
+    <select id="getAllStudents" resultMap="StudentResultMap">
+        SELECT * FROM student
+    </select>
+
+    <insert id="insertStudent" parameterType="com.ushareit.scmp.model.Student">
+        INSERT INTO student (name, age, gender) VALUES (#{name}, #{age}, #{gender})
+    </insert>
+
+    <update id="updateStudent" parameterType="com.ushareit.scmp.model.Student">
+        UPDATE student SET name = #{name}, email = #{email} WHERE id = #{id}
+    </update>
+
+    <delete id="deleteStudent" parameterType="long">
+        DELETE FROM student WHERE id = #{id}
+    </delete>
+</mapper>
